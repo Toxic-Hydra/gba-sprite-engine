@@ -91,6 +91,9 @@ public:
     void flipVertically(bool flip);
     void flipHorizontally(bool flip);
 
+    void hide();
+    void unhide();
+
     u32 getTileIndex() { return tileIndex; }
     VECTOR getPos() { return {x, y}; }
     GBAVector getPosAsVector() { return GBAVector(getPos()); }

@@ -24,11 +24,13 @@ void AffineSprite::rotate(u16 alpha) {
     obj_aff_rotate(this->affine.get(), alpha);
 }
 
-void AffineSprite::scale(int sx, int sy) {
+void AffineSprite::scale(FIXED sx, FIXED sy) {
     obj_aff_scale(this->affine.get(), sx, sy);
 }
 
-
+void AffineSprite::invscale(FIXED sx, FIXED sy) {
+    obj_aff_scale_inv(this->affine.get(), sx, sy);
+}
 
 void AffineSprite::syncOam() {
     Sprite::syncOam();
