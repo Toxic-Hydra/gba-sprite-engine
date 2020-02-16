@@ -84,3 +84,79 @@ void Background::scrollSpeed(int dx, int dy) {
     REG_BG_OFS[bgIndex].x += dx;
     REG_BG_OFS[bgIndex].y += dy;
 }
+
+// TileMap collisions pretty much entirely from: https://wiki.nycresistor.com/wiki/GB101:Collision_Detection
+int Background::se_index(int x, int y) {
+    //Adjust for map layout
+    switch(mapLayout)
+    {
+        //32*8 = 256 & 512*8 = 512
+        case MAPLAYOUT_32X32:
+            MAP_WIDTH   = 256;
+            MAP_HEIGHT  = 256;
+            break;
+        case MAPLAYOUT_32X64:
+            MAP_WIDTH   = 256;
+            MAP_HEIGHT  = 512;
+            break;
+        case MAPLAYOUT_64X32:
+            MAP_WIDTH   = 512;
+            MAP_HEIGHT  = 256;
+            break;
+        case MAPLAYOUT_64X64:
+            MAP_WIDTH   = 512;
+            MAP_HEIGHT  = 512;
+            break;
+    }
+
+    int base = 0;
+    if(x >= MAP_WIDTH/2) {
+        x -= MAP_WIDTH/2;
+        base = 32 * 32;
+    }
+
+    return base + (y>>3<<5) + (x>>3);
+
+}
+
+int Background::point_collision(int x, int y) {
+    int i = se_index(x,y);
+    int tid = se_mem[30][i];
+    tid = tid & 0xFF;
+
+    return (    //Collidable tile id's go here.
+        tid == 1
+    );
+}
+
+
+// Boxes have two points, we're essentially passing in the bounding box into this test
+// x1 y1 top left. bX bY Bounding box bottom right. xofs yofs are current dx dy
+int Background::collision_test(int x1, int y1, int bX, int bY, int xofs, int yofs) {
+    int result = 0;
+
+    if(xofs > 0 && !(bX+xofs & 7)) {
+        if( point_collision(bX + xofs, y1) || point_collision(bX = xofs, bY)) {
+            result = COLLISION_X;
+        }
+    }
+    else if( xofs < 0 && !(bX - xofs & 7)) {
+        if(point_collision(x1 + xofs, y1) || point_collision(x1 + xofs, bY)) {
+            result = COLLISION_X;
+        }
+    }
+
+    //now check Y
+    if(yofs > 0 && !(bY + yofs & 7)) {
+        if(point_collision(x1, bY + yofs) || point_collision(bX, bY + yofs)) {
+            result = result | COLLISION_Y;
+        }
+    }
+    else if(yofs < 0 && !(bY - yofs & 7)) {
+        if(point_collision(x1, y1 + yofs) || point_collision(bX, y1 + yofs)) {
+            result = result | COLLISION_Y;
+        }
+    }
+
+    return result;
+}
