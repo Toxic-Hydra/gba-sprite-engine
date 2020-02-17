@@ -86,7 +86,7 @@ void Background::scrollSpeed(int dx, int dy) {
 }
 
 // TileMap collisions pretty much entirely from: https://wiki.nycresistor.com/wiki/GB101:Collision_Detection
-int Background::se_index(int x, int y) {
+int Background::se_index(int x, int y) { //It seems to me that it doesn't accurately grab the index.
     //Adjust for map layout
     switch(mapLayout)
     {
@@ -121,11 +121,11 @@ int Background::se_index(int x, int y) {
 
 int Background::point_collision(int x, int y) {
     int i = se_index(x,y);
-    int tid = se_mem[30][i];
+    int tid = se_mem[screenBlockIndex][i]; //TEST USING SCREENBLOCK INDEX
     tid = tid & 0xFF;
 
     return (    //Collidable tile id's go here.
-        tid == 1
+        tid >= 1
     );
 }
 

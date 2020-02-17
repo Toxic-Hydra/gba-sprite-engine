@@ -7,7 +7,8 @@
 #include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 #include <libgba-sprite-engine/gba_engine.h>
-#include <libgba-sprite-engine/gba/tonc_oam.h>
+//#include <libgba-sprite-engine/gba/tonc_oam.h>
+
 
 Sprite::Sprite(const Sprite &other) : Sprite(nullptr, 0, other.x, other.y, other.spriteSize) {
     tileIndex = other.tileIndex;
@@ -53,14 +54,14 @@ void Sprite::flipVertically(bool flip) {
     }
 }
 
-void Sprite::hide() {
+/*void Sprite::hide() {
     obj_hide(&oam);
 }
 
 void Sprite::unhide() {
     obj_unhide(&oam, ATTR0_REG);
 }
-
+*/
 void Sprite::makeAnimated(int beginFrame, int numberOfFrames, int animationDelay) {
     previousFrame = -1;
     setBeginFrame(beginFrame);
