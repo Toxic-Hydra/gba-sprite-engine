@@ -3,6 +3,7 @@
 //
 
 #include <libgba-sprite-engine/gba/tonc_memmap.h>
+#include <libgba-sprite-engine/gba/tonc_core.h>
 #include <stdexcept>
 #include <libgba-sprite-engine/allocator.h>
 #ifdef CODE_COMPILED_AS_PART_OF_TEST
@@ -88,34 +89,24 @@ void Background::scrollSpeed(int dx, int dy) {
 // TileMap collisions pretty much entirely from: https://wiki.nycresistor.com/wiki/GB101:Collision_Detection
 int Background::se_index(int x, int y) { //It seems to me that it doesn't accurately grab the index.
     //Adjust for map layout
-    switch(mapLayout)
-    {
-        //32*8 = 256 & 512*8 = 512
-        case MAPLAYOUT_32X32:
-            MAP_WIDTH   = 256;
-            MAP_HEIGHT  = 256;
-            break;
-        case MAPLAYOUT_32X64:
-            MAP_WIDTH   = 256;
-            MAP_HEIGHT  = 512;
-            break;
-        case MAPLAYOUT_64X32:
-            MAP_WIDTH   = 512;
-            MAP_HEIGHT  = 256;
-            break;
-        case MAPLAYOUT_64X64:
-            MAP_WIDTH   = 512;
-            MAP_HEIGHT  = 512;
-            break;
-    }
+    //Keep in mind this only works on 64 x 64 maps.
+    //We likely need to adjust base for a smaller map but i can not figure out
+    //why a base of 256 is used in the first place.
 
     int base = 0;
     if(x >= MAP_WIDTH/2) {
         x -= MAP_WIDTH/2;
-        base = 32 * 32;
+        base = 32*32;
     }
 
     return base + (y>>3<<5) + (x>>3);
+    /*int n = x + y*32;
+    if (x >= 32)
+        n += 0x03E0;
+    if ( y >= 32 && mapLayout == MAPLAYOUT_64X64)
+        n += 0x0400;
+
+    return n;*/
 
 }
 

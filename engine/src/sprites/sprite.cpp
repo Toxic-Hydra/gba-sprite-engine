@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <libgba-sprite-engine/gba/tonc_memdef.h>
+#include <libgba-sprite-engine/gba/tonc_core.h>
 #include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 #include <libgba-sprite-engine/gba_engine.h>
@@ -54,14 +55,17 @@ void Sprite::flipVertically(bool flip) {
     }
 }
 
-/*void Sprite::hide() {
-    obj_hide(&oam);
+void Sprite::hide() {
+    BFN_SET2(oam.attr0, ATTR0_HIDE, ATTR0_MODE);
+    hidden = true;
 }
 
+
 void Sprite::unhide() {
-    obj_unhide(&oam, ATTR0_REG);
+    BFN_SET2(oam.attr0, ATTR0_REG, ATTR0_MODE);
+    hidden = false;
 }
-*/
+
 void Sprite::makeAnimated(int beginFrame, int numberOfFrames, int animationDelay) {
     previousFrame = -1;
     setBeginFrame(beginFrame);
