@@ -55,6 +55,9 @@ void Sprite::flipVertically(bool flip) {
     }
 }
 
+//Implementations of tonc's functions in here
+//Can not include tonc_oam more than once, 
+//several non inline functions cause issues with linker.
 void Sprite::hide() {
     BFN_SET2(oam.attr0, ATTR0_HIDE, ATTR0_MODE);
     hidden = true;

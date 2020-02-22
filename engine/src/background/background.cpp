@@ -3,7 +3,7 @@
 //
 
 #include <libgba-sprite-engine/gba/tonc_memmap.h>
-#include <libgba-sprite-engine/gba/tonc_core.h>
+
 #include <stdexcept>
 #include <libgba-sprite-engine/allocator.h>
 #ifdef CODE_COMPILED_AS_PART_OF_TEST
@@ -112,11 +112,11 @@ int Background::se_index(int x, int y) { //It seems to me that it doesn't accura
 
 int Background::point_collision(int x, int y) {
     int i = se_index(x,y);
-    int tid = se_mem[screenBlockIndex][i]; //TEST USING SCREENBLOCK INDEX
+    int tid = se_mem[screenBlockIndex][i]; 
     tid = tid & 0xFF;
 
     return (    //Collidable tile id's go here.
-        tid >= 1
+        tid == 1
     );
 }
 
@@ -126,24 +126,24 @@ int Background::point_collision(int x, int y) {
 int Background::collision_test(int x1, int y1, int bX, int bY, int xofs, int yofs) {
     int result = 0;
 
-    if(xofs > 0 && !(bX+xofs & 7)) {
-        if( point_collision(bX + xofs, y1) || point_collision(bX = xofs, bY)) {
+    if(xofs > 0 ) {
+        if( point_collision(bX + xofs, y1) || point_collision(bX + xofs, bY)) {
             result = COLLISION_X;
         }
     }
-    else if( xofs < 0 && !(bX - xofs & 7)) {
+    else if( xofs < 0 ) {
         if(point_collision(x1 + xofs, y1) || point_collision(x1 + xofs, bY)) {
             result = COLLISION_X;
         }
     }
 
     //now check Y
-    if(yofs > 0 && !(bY + yofs & 7)) {
+    if(yofs > 0 ) {
         if(point_collision(x1, bY + yofs) || point_collision(bX, bY + yofs)) {
             result = result | COLLISION_Y;
         }
     }
-    else if(yofs < 0 && !(bY - yofs & 7)) {
+    else if(yofs < 0 ) {
         if(point_collision(x1, y1 + yofs) || point_collision(bX, y1 + yofs)) {
             result = result | COLLISION_Y;
         }
@@ -151,3 +151,9 @@ int Background::collision_test(int x1, int y1, int bX, int bY, int xofs, int yof
 
     return result;
 }
+
+/*
+void Background::updateCollisions(int x1, int y1, int bX, int bY, int xofs, int yofs)
+{
+    
+}*/
