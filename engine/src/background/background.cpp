@@ -72,7 +72,7 @@ void Background::buildRegister() {
                  (0 << 6)  |       /* the mosaic flag */
                  (1 << 7)  |       /* color mode, 0 is 16 colors, 1 is 256 colors */
                  (screenBlockIndex << 8) |       /* the screen block the tile data is stored in */
-                 (1 << 13) |       /* wrapping flag */
+                 (0 << 13) |       /* wrapping flag */
                  (mapLayout << 14);
 }
 
@@ -87,31 +87,55 @@ void Background::scrollSpeed(int dx, int dy) {
 }
 
 // TileMap collisions pretty much entirely from: https://wiki.nycresistor.com/wiki/GB101:Collision_Detection
-int Background::se_index(int x, int y) { //It seems to me that it doesn't accurately grab the index.
-    //Adjust for map layout
-    //Keep in mind this only works on 64 x 64 maps.
-    //We likely need to adjust base for a smaller map but i can not figure out
-    //why a base of 256 is used in the first place.
+int Background::se_index(int x, int y, int backx, int backy) { 
+    //THanks to Ian Finlayson for this: http://ianfinlayson.net/class/cpsc305/notes/15-sprites
+    //I was having issues accurately grabbing index and was not properly accounting for scroll like he is.
+    
+    x += backx;
+    y += backy;
 
-    int base = 0;
-    if(x >= MAP_WIDTH/2) {
-        x -= MAP_WIDTH/2;
-        base = 32*32;
+    //convert screen to tile 
+    x >>= 3;
+    y >>= 3;
+
+    while (x >= this->MAP_WIDTH ) {
+        x -= this->MAP_WIDTH;
+    }
+    while (y >= this->MAP_HEIGHT ) {
+        y -= this->MAP_HEIGHT;
+    }
+    while (x < 0) {
+        x += this->MAP_WIDTH;
+    }
+    while (y < 0) {
+        y += this->MAP_HEIGHT;
+    }
+    
+    int offset = 0;
+
+    if (this->MAP_WIDTH == 64 && x >= 32) {
+        x -= 32;
+        offset += 0x400;
+    }
+    if (this->MAP_HEIGHT == 64 && y >= 32) {
+        y -=32;
+
+        if (this->MAP_WIDTH == 64) {
+            offset += 0x800;
+        }
+        else {
+            offset += 0x400;
+        }
     }
 
-    return base + (y>>3<<5) + (x>>3);
-    /*int n = x + y*32;
-    if (x >= 32)
-        n += 0x03E0;
-    if ( y >= 32 && mapLayout == MAPLAYOUT_64X64)
-        n += 0x0400;
+    int index = y * 32 + x;
 
-    return n;*/
+    return index + offset;
 
 }
 
-int Background::point_collision(int x, int y) {
-    int i = se_index(x,y);
+int Background::point_collision(int x, int y, int backx, int backy) {
+    int i = se_index(x,y, backx, backy);
     int tid = se_mem[screenBlockIndex][i]; 
     tid = tid & 0xFF;
 
@@ -123,28 +147,28 @@ int Background::point_collision(int x, int y) {
 
 // Boxes have two points, we're essentially passing in the bounding box into this test
 // x1 y1 top left. bX bY Bounding box bottom right. xofs yofs are current dx dy
-int Background::collision_test(int x1, int y1, int bX, int bY, int xofs, int yofs) {
+int Background::collision_test(int x1, int y1, int bX, int bY, int xofs, int yofs, int backx, int backy) {
     int result = 0;
 
     if(xofs > 0 ) {
-        if( point_collision(bX + xofs, y1) || point_collision(bX + xofs, bY)) {
+        if( point_collision(bX + xofs, y1, backx, backy) || point_collision(bX + xofs, bY, backx, backy)) {
             result = COLLISION_X;
         }
     }
     else if( xofs < 0 ) {
-        if(point_collision(x1 + xofs, y1) || point_collision(x1 + xofs, bY)) {
+        if(point_collision(x1 + xofs, y1, backx, backy) || point_collision(x1 + xofs, bY, backx, backy)) {
             result = COLLISION_X;
         }
     }
 
     //now check Y
     if(yofs > 0 ) {
-        if(point_collision(x1, bY + yofs) || point_collision(bX, bY + yofs)) {
+        if(point_collision(x1, bY + yofs, backx, backy) || point_collision(bX, bY + yofs, backx, backy)) {
             result = result | COLLISION_Y;
         }
     }
     else if(yofs < 0 ) {
-        if(point_collision(x1, y1 + yofs) || point_collision(bX, y1 + yofs)) {
+        if(point_collision(x1, y1 + yofs, backx, backy) || point_collision(bX, y1 + yofs, backx, backy)) {
             result = result | COLLISION_Y;
         }
     }
